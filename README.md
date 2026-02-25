@@ -1,142 +1,386 @@
-# Assignment 2: Document Similarity using MapReduce
+### **Assignment 2: Document Similarity using MapReduce**
 
-**Name:** 
+#### Name: Lakshmi Deepak Chidagam
 
-**Student ID:** 
+#### Student ID: 801461579
 
-## Approach and Implementation
+###### **Approach and Implementation :**
 
-### Mapper Design
-[Explain the logic of your Mapper class. What is its input key-value pair? What does it emit as its output key-value pair? How does it help in solving the overall problem?]
 
-### Reducer Design
-[Explain the logic of your Reducer class. What is its input key-value pair? How does it process the values for a given key? What does it emit as the final output? How do you calculate the Jaccard Similarity here?]
+This project implements document similarity using Hadoop MapReduce. Each document is processed to extract unique words, and the similarity between every pair of documents is calculated using Jaccard Similarity.
 
-### Overall Data Flow
-[Describe how data flows from the initial input files, through the Mapper, shuffle/sort phase, and the Reducer to produce the final output.]
 
----
 
-## Setup and Execution
+The solution uses three main components:
 
-### ` Note: The below commands are the ones used for the Hands-on. You need to edit these commands appropriately towards your Assignment to avoid errors. `
+\- Mapper: Extracts words from each document
 
-### 1. **Start the Hadoop Cluster**
+\- Reducer: Builds word sets and computes similarity
 
-Run the following command to start the Hadoop cluster:
+\- Driver: Configures and runs the MapReduce job
+
+
+
+###### **Mapper Design :**
+
+
+
+The input to the Mapper is:
+
+\- Key: Line offset (LongWritable)
+
+\- Value: One line from the input file (Text)
+
+
+
+Each line represents one document.
+
+
+
+Example:
+
+
+
+Document1 This is a sample document
+
+
+
+
+
+##### **Processing :**
+
+The Mapper:
+
+1\. Splits the line into document ID and content
+
+2\. Converts text to lowercase
+
+3\. Removes punctuation
+
+4\. Splits content into words
+
+
+
+###### **Output :**
+
+The Mapper emits:
+
+
+
+<documentID, word>
+
+
+
+
+
+Example Output:
+
+
+
+Document1 → this
+
+Document1 → is
+
+Document1 → sample
+
+
+
+
+
+##### **Purpose :**
+
+This groups all words belonging to the same document, which helps in building word sets for each document in the Reducer.
+
+
+
+###### **Reducer Design :**
+
+
+
+Input
+
+The Reducer receives:
+
+\- Key: Document ID (Text)
+
+\- Value: List of words belonging to that document
+
+
+
+Example:
+
+
+
+Document1 → \[this, is, sample, document]
+
+
+
+
+
+##### **Processing :**
+
+The Reducer:
+
+1\. Stores each document and its unique words in a HashSet
+
+2\. Builds a map: Document → Set of Words
+
+3\. Compares every pair of documents
+
+4\. Calculates intersection and union of word sets
+
+5\. Computes Jaccard Similarity
+
+
+
+Jaccard Similarity Formula :
+
+
+
+Similarity = |A ∩ B| / |A ∪ B|
+
+
+
+Where:
+
+\- A and B are word sets of two documents
+
+\- ∩ is intersection
+
+\- ∪ is union
+
+
+
+##### **Output :**
+
+The Reducer emits:
+
+
+
+<Document1, Document2 Similarity: value>
+
+
+
+Example:
+
+
+
+Document1, Document2 Similarity: 0.56
+
+
+
+##### **Overall Data Flow :**
+
+
+
+1\. Input file is stored in HDFS
+
+2\. Mapper reads each line and emits document-word pairs
+
+3\. Shuffle and Sort groups values by document ID
+
+4\. Reducer builds word sets and computes similarity
+
+5\. Output is written to HDFS
+
+
+
+Flow:
+
+
+
+Input → Mapper → Shuffle/Sort → Reducer → Output
+
+
+
+##### **Setup and Execution :**
+
+
+
+1\. Start Hadoop Cluster
 
 ```bash
+
 docker compose up -d
-```
 
-### 2. **Build the Code**
+2\. Build the Code
 
-Build the code using Maven:
-
-```bash
 mvn clean package
-```
 
-### 4. **Copy JAR to Docker Container**
+3\. Copy JAR to Docker Container
 
-Copy the JAR file to the Hadoop ResourceManager container:
+docker cp target/DocumentSimilarity-0.0.1-SNAPSHOT-0.0.1-SNAPSHOT.jar \\
 
-```bash
-docker cp target/WordCountUsingHadoop-0.0.1-SNAPSHOT.jar resourcemanager:/opt/hadoop-3.2.1/share/hadoop/mapreduce/
-```
+resourcemanager:/opt/hadoop-3.2.1/share/hadoop/mapreduce/
 
-### 5. **Move Dataset to Docker Container**
+4\. Copy Dataset to Docker Container
 
-Copy the dataset to the Hadoop ResourceManager container:
+docker cp shared-folder/input/data/input.txt \\
 
-```bash
-docker cp shared-folder/input/data/input.txt resourcemanager:/opt/hadoop-3.2.1/share/hadoop/mapreduce/
-```
+resourcemanager:/opt/hadoop-3.2.1/share/hadoop/mapreduce/
 
-### 6. **Connect to Docker Container**
+5\. Connect to Docker Container
 
-Access the Hadoop ResourceManager container:
-
-```bash
 docker exec -it resourcemanager /bin/bash
-```
 
-Navigate to the Hadoop directory:
-
-```bash
 cd /opt/hadoop-3.2.1/share/hadoop/mapreduce/
-```
 
-### 7. **Set Up HDFS**
+6\. Set Up HDFS
 
-Create a folder in HDFS for the input dataset:
 
-```bash
+
+Create directory:
+
+
+
 hadoop fs -mkdir -p /input/data
-```
-
-Copy the input dataset to the HDFS folder:
-
-```bash
-hadoop fs -put ./input.txt /input/data
-```
-
-### 8. **Execute the MapReduce Job**
-
-Run your MapReduce job using the following command: Here I got an error saying output already exists so I changed it to output1 instead as destination folder
-
-```bash
-hadoop jar /opt/hadoop-3.2.1/share/hadoop/mapreduce/WordCountUsingHadoop-0.0.1-SNAPSHOT.jar com.example.controller.Controller /input/data/input.txt /output1
-```
-
-### 9. **View the Output**
-
-To view the output of your MapReduce job, use:
-
-```bash
-hadoop fs -cat /output1/*
-```
-
-### 10. **Copy Output from HDFS to Local OS**
-
-To copy the output from HDFS to your local machine:
-
-1. Use the following command to copy from HDFS:
-    ```bash
-    hdfs dfs -get /output1 /opt/hadoop-3.2.1/share/hadoop/mapreduce/
-    ```
-
-2. use Docker to copy from the container to your local machine:
-   ```bash
-   exit 
-   ```
-    ```bash
-    docker cp resourcemanager:/opt/hadoop-3.2.1/share/hadoop/mapreduce/output1/ shared-folder/output/
-    ```
-3. Commit and push to your repo so that we can able to see your output
 
 
----
 
-## Challenges and Solutions
+Upload file:
 
-[Describe any challenges you faced during this assignment. This could be related to the algorithm design (e.g., how to generate pairs), implementation details (e.g., data structures, debugging in Hadoop), or environmental issues. Explain how you overcame these challenges.]
 
----
-## Sample Input
 
-**Input from `small_dataset.txt`**
-```
+hadoop fs -put input.txt /input/data
+
+7\. Execute MapReduce Job
+
+hadoop jar DocumentSimilarity-0.0.1-SNAPSHOT-0.0.1-SNAPSHOT.jar \\
+
+com.example.controller.DocumentSimilarityDriver \\
+
+/input/data/input.txt/output1
+
+
+
+Note: If output directory already exists, a new folder name (output1/output2) was used.
+
+
+
+8\. View Output
+
+hadoop fs -cat /output2/\*
+
+9\. Copy Output to Local System
+
+
+
+From HDFS to container:
+
+
+
+hdfs dfs -get /output2 /opt/hadoop-3.2.1/share/hadoop/mapreduce/
+
+
+
+Exit container:
+
+
+
+exit
+
+
+
+Copy to local machine:
+
+
+
+docker cp resourcemanager:/opt/hadoop-3.2.1/share/hadoop/mapreduce/output2\\
+
+shared-folder/output/
+
+10\. Commit and Push
+
+git add .
+
+git commit -m "Completed Assignment 2"
+
+git push
+
+Challenges and Solutions
+
+1\. Output Directory Already Exists
+
+
+
+Problem:
+
+Hadoop throws an error if the output directory already exists.
+
+
+
+Solution:
+
+A new output directory (output1/output2) was used.
+
+
+
+2\. Implementing Mapper, Reducer, and Driver
+
+
+
+Problem:
+
+Initially, the project contained empty template files.
+
+
+
+Solution:
+
+The Mapper, Reducer, and Driver classes were implemented by following Hadoop MapReduce architecture.
+
+
+
+3\. Debugging MapReduce Jobs
+
+
+
+Problem:
+
+Debugging distributed jobs is difficult.
+
+
+
+Solution:
+
+Small datasets were used for testing, and logs were analyzed.
+
+
+
+4\. Managing Docker and HDFS
+
+
+
+Problem:
+
+Understanding file movement between local system, container, and HDFS.
+
+
+
+Solution:
+
+Commands were practiced step-by-step to ensure proper data flow.
+
+
+Input :
+
+
+
 Document1 This is a sample document containing words
-Document2 Another document that also has words
-Document3 Sample text with different words
-```
-## Sample Output
 
-**Output from `small_dataset.txt`**
-```
-"Document1, Document2 Similarity: 0.56"
-"Document1, Document3 Similarity: 0.42"
-"Document2, Document3 Similarity: 0.50"
-```
-## Obtained Output: (Place your obtained output here.)
+Document2 Another document that also has words
+
+Document3 Sample text with different words
+
+
+
+Obtained Output :
+
+
+
+Document3, Document2	Similarity: 0.10
+
+Document3, Document1	Similarity: 0.20
+
+Document2, Document1	Similarity: 0.18
+
