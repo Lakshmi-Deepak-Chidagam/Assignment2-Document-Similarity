@@ -199,31 +199,31 @@ Input → Mapper → Shuffle/Sort → Reducer → Output
 
 1\. Start Hadoop Cluster
 
-```bash
 
-docker compose up -d
+
+```docker compose up -d```
 
 2\. Build the Code
 
-mvn clean package
+```mvn clean package```
 
 3\. Copy JAR to Docker Container
 
-docker cp target/DocumentSimilarity-0.0.1-SNAPSHOT-0.0.1-SNAPSHOT.jar \\
+```docker cp target/DocumentSimilarity-0.0.1-SNAPSHOT-0.0.1-SNAPSHOT.jar \\```
 
-resourcemanager:/opt/hadoop-3.2.1/share/hadoop/mapreduce/
+```resourcemanager:/opt/hadoop-3.2.1/share/hadoop/mapreduce/```
 
 4\. Copy Dataset to Docker Container
 
-docker cp shared-folder/input/data/input.txt \\
+```docker cp shared-folder/input/data/input.txt \\```
 
-resourcemanager:/opt/hadoop-3.2.1/share/hadoop/mapreduce/
+```resourcemanager:/opt/hadoop-3.2.1/share/hadoop/mapreduce/```
 
 5\. Connect to Docker Container
 
-docker exec -it resourcemanager /bin/bash
+```docker exec -it resourcemanager /bin/bash```
 
-cd /opt/hadoop-3.2.1/share/hadoop/mapreduce/
+```cd /opt/hadoop-3.2.1/share/hadoop/mapreduce/```
 
 6\. Set Up HDFS
 
@@ -233,7 +233,7 @@ Create directory:
 
 
 
-hadoop fs -mkdir -p /input/data
+```hadoop fs -mkdir -p /input/data```
 
 
 
@@ -241,15 +241,15 @@ Upload file:
 
 
 
-hadoop fs -put input.txt /input/data
+```hadoop fs -put input.txt /input/data```
 
 7\. Execute MapReduce Job
 
-hadoop jar DocumentSimilarity-0.0.1-SNAPSHOT-0.0.1-SNAPSHOT.jar \\
+```hadoop jar DocumentSimilarity-0.0.1-SNAPSHOT-0.0.1-SNAPSHOT.jar \\```
 
-com.example.controller.DocumentSimilarityDriver \\
+```com.example.controller.DocumentSimilarityDriver \\```
 
-/input/data/input.txt/output1
+```/input/data/input.txt/output1 ```
 
 
 
@@ -259,7 +259,7 @@ Note: If output directory already exists, a new folder name (output1/output2) wa
 
 8\. View Output
 
-hadoop fs -cat /output2/\*
+```hadoop fs -cat /output2/\*```
 
 9\. Copy Output to Local System
 
@@ -269,7 +269,7 @@ From HDFS to container:
 
 
 
-hdfs dfs -get /output2 /opt/hadoop-3.2.1/share/hadoop/mapreduce/
+```hdfs dfs -get /output2 /opt/hadoop-3.2.1/share/hadoop/mapreduce/```
 
 
 
@@ -277,7 +277,7 @@ Exit container:
 
 
 
-exit
+```exit```
 
 
 
@@ -285,17 +285,17 @@ Copy to local machine:
 
 
 
-docker cp resourcemanager:/opt/hadoop-3.2.1/share/hadoop/mapreduce/output2\\
+```docker cp resourcemanager:/opt/hadoop-3.2.1/share/hadoop/mapreduce/output2\\```
 
-shared-folder/output/
+```shared-folder/output/```
 
 10\. Commit and Push
 
-git add .
+```git add .```
 
-git commit -m "Completed Assignment 2"
+```git commit -m "Completed Assignment 2"```
 
-git push
+```git push```
 
 Challenges and Solutions
 
